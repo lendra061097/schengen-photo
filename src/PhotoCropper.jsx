@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from "react";
 import Cropper from "react-easy-crop";
 import Slider from "@mui/material/Slider";
-import guideline from "./assets/guideline.png";
+const guideline = new URL('./assets/guideline.png', import.meta.url).href;
 import { SelfieSegmentation } from "@mediapipe/selfie_segmentation";
 
 export default function PhotoCropper() {
