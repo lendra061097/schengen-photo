@@ -12,6 +12,9 @@ export default function PhotoCropper() {
   const [photoType, setPhotoType] = useState("schengen");
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [backgroundColor, setBackgroundColor] = useState("#ffffff");
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+
 
   // ---------------------------
   // AUTO BACKGROUND REMOVAL + FEATHER EDGE
@@ -59,16 +62,34 @@ export default function PhotoCropper() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setUploadProgress(0);
+    setIsUploading(true);
+
     const reader = new FileReader();
+
+    reader.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const percent = Math.round((event.loaded / event.total) * 100);
+        setUploadProgress(percent);
+      }
+    };
+
     reader.onload = async () => {
+      setUploadProgress(70); // background remove phase
       const original = reader.result;
+
       const cleaned = await autoRemoveBackground(original);
+
+      setUploadProgress(100);
+      setTimeout(() => setIsUploading(false), 500);
 
       setImageSrc(cleaned);
       setProcessedImage(cleaned);
     };
+
     reader.readAsDataURL(file);
   };
+
 
   // ---------------------------
   // CROP COMPLETE
@@ -134,6 +155,26 @@ export default function PhotoCropper() {
 
       {/* Upload */}
       <input type="file" accept="image/*" onChange={handleFile} />
+
+      {isUploading && (
+        <div style={{ width: "300px", margin: "20px auto" }}>
+          <div style={{
+            height: "12px",
+            background: "#ddd",
+            borderRadius: "8px",
+            overflow: "hidden"
+          }}>
+            <div style={{
+              height: "100%",
+              width: `${uploadProgress}%`,
+              background: "#4CAF50",
+              transition: "width 0.3s ease"
+            }}></div>
+          </div>
+          <p style={{ marginTop: 5 }}>{uploadProgress}%</p>
+        </div>
+      )}
+
 
       {/* Size Type */}
       <div style={{ margin: "20px 0" }}>
