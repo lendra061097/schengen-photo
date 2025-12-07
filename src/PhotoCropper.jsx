@@ -29,29 +29,19 @@ export default function PhotoCropper() {
 
       const segmentation = new SelfieSegmentation({
         locateFile: (file) =>
-          `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`,
+          `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/${file}`,
       });
 
       segmentation.setOptions({ modelSelection: 1 });
 
       segmentation.onResults((results) => {
-        // Raw mask
         const mask = results.segmentationMask;
 
-        // Feather mask
-        const blurCanvas = document.createElement("canvas");
-        blurCanvas.width = mask.width;
-        blurCanvas.height = mask.height;
-        const bctx = blurCanvas.getContext("2d");
-
-        bctx.filter = "blur(0px)"; // feather radius
-        bctx.drawImage(mask, 0, 0);
-
-        // Apply mask
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0);
+
         ctx.globalCompositeOperation = "destination-in";
-        ctx.drawImage(blurCanvas, 0, 0);
+        ctx.drawImage(mask, 0, 0);
         ctx.globalCompositeOperation = "source-over";
 
         resolve(canvas.toDataURL("image/png"));
@@ -60,6 +50,7 @@ export default function PhotoCropper() {
       await segmentation.send({ image: img });
     });
   };
+
 
   // ---------------------------
   // HANDLE FILE UPLOAD (AUTO REMOVE BG)
